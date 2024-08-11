@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SVG to CSV Converter</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #C33764;
+            background: -webkit-linear-gradient(to right, #1D2671, #C33764);
+            background: linear-gradient(to right, #1D2671, #C33764);
+            margin: 0;
+            padding: 0;
+             font-family: 'Roboto', sans-serif;
+            perspective: 1000px; /* Add perspective for 3D effect */
+        }
+
+        .container {
+            width: 50%;
+            margin: 100px auto;
+            text-align: center;
+            background: #200122;
+            background: -webkit-linear-gradient(to right, #6f0000, #200122);
+            background: linear-gradient(to right, #6f0000, #200122);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            color: white;
+            transition: transform 0.1s ease-out; /* Smooth transition */
+        }
+
+        .container:hover {
+            transform: rotateX(5deg) rotateY(5deg);
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .file-label {
+            display: inline-block;
+            padding: 10px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            color: #fff;
+            background-color: #007bff;
+            border: 2px solid #007bff;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s, border-color 0.3s;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .file-label:hover {
+            background-color: #0056b3;
+            border-color: #0056b3;
+        }
+
+        .file-label input[type="file"] {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .file-label-text {
+            display: inline-block;
+            z-index: 1;
+        }
+
+        button {
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 16px;
+            margin-top: 20px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        #result {
+            margin-top: 20px;
+        }
+
+        #download-link {
+            font-size: 16px;
+            color: white;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+<h1 style="text-align:center;color:white">REGULARIZE CURVE AND DETECT SYMMETRY</h1>
+    <div class="container">
+        <h1>Upload SVG File</h1>
+        <form id="upload-form" enctype="multipart/form-data" style="display:flex;flex-direction:column;justify-content:center;align-items:center">
+            <label for="file-input" class="file-label">
+                <span class="file-label-text">Choose SVG File</span>
+                <input type="file" id="file-input" name="file" accept=".svg">
+            </label>
+            <button type="submit">Upload</button>
+        </form>
+        <div id="result">
+            <a id="download-link" style="display: none;">Download Result</a>
+        </div>
+    </div>
+    <script>
+        document.getElementById('upload-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            var fileInput = document.getElementById('file-input');
+            var formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+
+            fetch('/upload', {
+                method: 'POST',
+                body: formData
+            }).then(response => {
+                if (response.ok) {
+                    return response.blob();
+                }
+                throw new Error('Network response was not ok.');
+            }).then(blob => {
+                var url = window.URL.createObjectURL(blob);
+                var a = document.createElement('a');
+                a.href = url;
+                a.download = 'result.zip';
+                document.getElementById('download-link').href = url;
+                document.getElementById('download-link').style.display = 'inline';
+                document.getElementById('download-link').textContent = 'Download Result';
+            }).catch(error => {
+                console.error('There was a problem with the fetch operation:', error);
+            });
+        });
+
+        document.addEventListener('mousemove', function(e) {
+            var container = document.querySelector('.container');
+            var rect = container.getBoundingClientRect();
+            var x = e.clientX - rect.left;
+            var y = e.clientY - rect.top;
+            var centerX = rect.width / 2;
+            var centerY = rect.height / 2;
+            var rotateX = (y - centerY) / centerY * 5; // Adjust sensitivity
+            var rotateY = (x - centerX) / centerX * -5; // Adjust sensitivity
+            container.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+        });
+    </script>
+</body>
+</html>
